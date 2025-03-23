@@ -1,8 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `week8_v2` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `week8_v2`;
+CREATE DATABASE  IF NOT EXISTS `week8_v4` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `week8_v4`;
 -- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
 --
--- Host: localhost    Database: week8_v2
+-- Host: localhost    Database: week8_v4
 -- ------------------------------------------------------
 -- Server version	8.4.3
 
@@ -127,6 +127,7 @@ CREATE TABLE `loan` (
 
 LOCK TABLES `loan` WRITE;
 /*!40000 ALTER TABLE `loan` DISABLE KEYS */;
+INSERT INTO `loan` VALUES (98991234,1,'2025-03-24','2025-04-10','2025-04-01');
 /*!40000 ALTER TABLE `loan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -187,7 +188,7 @@ CREATE TABLE `person` (
 
 LOCK TABLES `person` WRITE;
 /*!40000 ALTER TABLE `person` DISABLE KEYS */;
-INSERT INTO `person` VALUES (42445462,'Luiza','Rakowski','lr@comm.ie',5,'0987654321',1),(44234233,'Skye','Deed','skyed@uk.com',6,'3322110099',7),(54424524,'Marie','Curie','polon@onet.pl',2,'1122334455',9),(55555333,'Dan','Long','long@gmail.com',4,'5544332211',2),(55634221,'Maella','Gerafe','gmm@gmail.com',10,'4433221100',7),(90000430,'Hazel','Fenrt','hazelnut@son.com',9,'0099887766',8),(90909887,'Gina','Holly','gully@gmail.com',8,'1100998877',2),(96364239,'Paula','Manikowska','fan@uk.com',7,'2211009988',3),(98778349,'Inna','Grant','hfhuo@gmail.com',3,'6677889900',3),(98991234,'Anna','Wong','wa@co.uk',1,'1234567890',1);
+INSERT INTO `person` VALUES (42445462,'Luiza','Rakowski','lr@comm.ie',5,'0987654321',1),(44234233,'Skye','Deed','newemail@sky.com',6,'3322110099',7),(54424524,'Marie','Curie','polon@onet.pl',2,'1122334455',9),(55555333,'Dan','Long','long@gmail.com',4,'5544332211',2),(55634221,'Maella','Gerafe','gmm@gmail.com',10,'4433221100',7),(90000430,'Hazel','Fenrt','hazelnut@son.com',9,'0099887766',8),(90909887,'Gina','Holly','gully@gmail.com',8,'1100998877',2),(96364239,'Paula','Manikowska','fan@uk.com',7,'2211009988',3),(98778349,'Inna','Grant','hfhuo@gmail.com',3,'6677889900',3),(98991234,'Anna','Wong','wa@co.uk',1,'1234567890',1);
 /*!40000 ALTER TABLE `person` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -219,8 +220,84 @@ INSERT INTO `preferredgenre` VALUES (98991234,1),(98991234,9),(54424524,7),(9877
 UNLOCK TABLES;
 
 --
--- Dumping routines for database 'week8_v2'
+-- Dumping routines for database 'week8_v4'
 --
+/*!50003 DROP PROCEDURE IF EXISTS `BorrowBooks` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `BorrowBooks`(
+    IN p_Login VARCHAR(100),
+    IN p_Title VARCHAR(200),
+    IN p_LoanDate DATE,
+    IN p_DueDate DATE,
+    IN p_ReturnDate DATE
+)
+BEGIN
+    DECLARE v_LibraryMemberID INT;
+    DECLARE v_BookID INT;
+
+    /* Step 1: Retrieve LibraryMemberID using Login */
+    SELECT LibraryMemberID INTO v_LibraryMemberID
+    FROM week8_v4.logindetails  
+    WHERE Login = p_Login;  
+
+    -- Check if LibraryMemberID was found
+    IF v_LibraryMemberID IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: LibraryMemberID not found';
+    END IF;
+
+    /* Step 2: Retrieve BookID using Title */
+    SELECT BookID INTO v_BookID
+    FROM week8_v4.Book
+    WHERE Title = p_Title;
+
+    -- Check if BookID was found
+    IF v_BookID IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: BookID not found';
+    END IF;
+
+    /* Step 3: Insert into Loan Table */
+    INSERT INTO week8_v4.loan (LibraryMemberID, BookID, LoanDate, DueDate, ReturnDate)
+    VALUES (v_LibraryMemberID, v_BookID, p_LoanDate, p_DueDate, p_ReturnDate);
+
+    SELECT * FROM week8_v4.loan;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_member_email` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_member_email`(
+   IN p_LibraryMemberID INT,
+   IN p_NewEmailAddress VARCHAR(100)
+)
+BEGIN
+   UPDATE Person
+   SET EmailAddress = p_NewEmailAddress
+   WHERE LibraryMemberID = p_LibraryMemberID;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -231,4 +308,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-22 13:26:37
+-- Dump completed on 2025-03-23 18:06:17
